@@ -1,5 +1,8 @@
+import shap
 import pandas as pd
+import numpy as np
 import xgboost as xgb
+import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, roc_auc_score, confusion_matrix
 
@@ -64,7 +67,6 @@ y_pred = xgb_model.predict(X_test)
 y_pred_proba = xgb_model.predict_proba(X_test)[:, 1]
 
 # Evaluate the model for business value
-
 print("\nModel Evaluation:")
 
 print("\nClassification Report:")
@@ -79,3 +81,25 @@ print(f"True Negatives (Correctly Approved): {cm[0][0]}")
 print(f"False Positives (Incorrectly Denied - Lost Revenue): {cm[0][1]}")
 print(f"False Negatives (Incorrectly Approved - Financial Loss): {cm[1][0]}")
 print(f"True Positives (Correctly Denied - Risk Avoided): {cm[1][1]}")
+
+# Initialize SHAP explainer
+explainer = shap.TreeExplainer(xgb_model)
+
+# Calculate SHAP values
+print("Calculating SHAP values... (this might take a few seconds)")
+shap_values = explainer(X_test)
+
+# Generate global explanation
+print("\nGenerating global explanation...")
+plt.figure(figsize=(10, 6))
+shap.plots.beeswarm(shap_values, max_display=10)
+
+# Generate local explanation
+print("\nGenerating local explanation for a specific denied customer...")
+true_positive = (y_test == 1) & (y_pred == 1)
+ex_customer_idx = np.where(true_positive)[0][0]
+customer_id = X_test.index[ex_customer_idx]
+
+print(f"Generating explanation for Customer ID: {customer_id}")
+plt.figure(figsize=(8, 5))
+shap.plots.waterfall(shap_values[ex_customer_idx])
