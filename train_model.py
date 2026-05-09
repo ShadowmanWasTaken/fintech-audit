@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import xgboost as xgb
 import matplotlib.pyplot as plt
+from interpret import show
+from interpret.glassbox import ExplainableBoostingClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, roc_auc_score, confusion_matrix
 
@@ -67,7 +69,7 @@ y_pred = xgb_model.predict(X_test)
 y_pred_proba = xgb_model.predict_proba(X_test)[:, 1]
 
 # Evaluate the model for business value
-print("\nModel Evaluation:")
+print("\nXGBoost Model Evaluation:")
 
 print("\nClassification Report:")
 print(classification_report(y_test, y_pred))
@@ -90,7 +92,7 @@ print("Calculating SHAP values... (this might take a few seconds)")
 shap_values = explainer(X_test)
 
 # Generate global explanation
-print("\nGenerating global explanation...")
+print("\nGenerating XGBoost global explanation...")
 plt.figure(figsize=(10, 6))
 shap.plots.beeswarm(shap_values, max_display=10)
 
@@ -100,6 +102,40 @@ true_positive = (y_test == 1) & (y_pred == 1)
 ex_customer_idx = np.where(true_positive)[0][0]
 customer_id = X_test.index[ex_customer_idx]
 
-print(f"Generating explanation for Customer ID: {customer_id}")
+print(f"Generating explanation for customer ID: {customer_id}")
 plt.figure(figsize=(8, 5))
 shap.plots.waterfall(shap_values[ex_customer_idx])
+
+# =================================================
+
+# Initialize and train EBM
+print("Training the Explainable Boosting Machine (EBM)...")
+
+ebm_model = ExplainableBoostingClassifier(random_state=42)
+ebm_model.fit(X_train, y_train)
+
+print("EBM Training complete!")
+
+# Evaluate EBM performance
+ebm_y_pred = ebm_model.predict(X_test)
+ebm_y_pred_proba = ebm_model.predict_proba(X_test)[:,1]
+
+print("\nEBM Model Evaluation:")
+print("\nClassification Report:")
+print(classification_report(y_test, ebm_y_pred))
+
+ebm_auc_score = roc_auc_score(y_test, ebm_y_pred_proba)
+print(f"ROC-AUC Score: {ebm_auc_score:.4f}")
+
+# Generate EBM explanations
+print("\nGenerating EBM global explanation...")
+ebm_global = ebm_model.explain_global(name='EBM Global')
+
+print(f"Generating EBM local explanation for customer ID: {customer_id}")
+ebm_local = ebm_model.explain_local(
+    X_test.iloc[[ex_customer_idx]], 
+    y_test.iloc[[ex_customer_idx]], 
+    name='EBM Local'
+)
+
+show([ebm_global, ebm_local])
