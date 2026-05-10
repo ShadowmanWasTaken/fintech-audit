@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    # Ensures that container restarts if the app crashes
+    restart: unless-stopped 
+
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80" # Maps port 80 on your machine to port 80 in the Nginx container
+    depends_on:
+      - backend
+    restart: unless-stopped
