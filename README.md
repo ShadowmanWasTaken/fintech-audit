@@ -2,12 +2,6 @@
 
 An enterprise-grade, containerized Machine Learning application designed to assess credit risk and generate regulatory-compliant explanations for algorithmic decisions using Explainable AI (XAI) techniques.
 
-## Overview
-
-As machine learning models become increasingly integrated into high-stakes financial environments, the "black box" nature of complex algorithms introduces significant regulatory and ethical risks. In finance, if an applicant is denied credit based on an algorithm, the institution must legally provide an Adverse Action notice explaining *why*.
-
-This project bridges the gap between predictive power and algorithmic transparency. It features a highly accurate **XGBoost** model wrapped in a **SHAP (Shapley Additive exPlanations)** interpretability layer, served via a lightning-fast **FastAPI** backend, and visualized through a modern **React** dashboard.
-
 ## Key Features
 
 * **Real-Time Credit Auditing:** Predicts the probability of default using historical financial data.
