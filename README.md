@@ -2,6 +2,8 @@
 
 An enterprise-grade, containerized Machine Learning application designed to assess credit risk and generate regulatory-compliant explanations for algorithmic decisions using Explainable AI (XAI) techniques.
 
+[Test it out here!](https://fintech-audit.vercel.app/)
+
 ## Key Features
 
 * **Real-Time Credit Auditing:** Predicts the probability of default using historical financial data.
