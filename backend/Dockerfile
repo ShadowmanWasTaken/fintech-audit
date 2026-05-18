@@ -1,25 +1,28 @@
 # Use the official, lightweight Python 3.11 image
 FROM python:3.11-slim
 
-# Set the working directory inside the container
+# Create a non-root user (Hugging Face requirement)
+RUN useradd -m -u 1000 user
+USER user
+ENV PATH="/home/user/.local/bin:$PATH"
+
+# Set the working directory
 WORKDIR /app
 
-# Copy the requirements file first (leveraging Docker cache)
-COPY requirements.txt .
+# Copy files and set ownership to the new user
+COPY --chown=user:user requirements.txt .
 
-# XGBoost requires the 'libgomp1' C-library to run. 
-# The 'slim' python image doesn't have it by default, so we install it here.
+# Install the C-library (temporarily switch to root to install, then back to user)
+USER root
 RUN apt-get update && apt-get install -y libgomp1 && rm -rf /var/lib/apt/lists/*
+USER user
 
-# Install the Python dependencies
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of your backend code and model files
-COPY . .
+# Copy the rest of the code
+COPY --chown=user:user . .
 
-# Expose the port FastAPI runs on
+# Start the server
 EXPOSE 7860
-
-# Command to run the application
-# We use 0.0.0.0 so the container is accessible from the outside
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]

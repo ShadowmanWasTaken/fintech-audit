@@ -50,6 +50,11 @@ class CustomerData(BaseModel):
     PAY_AMT5: float
     PAY_AMT6: float
 
+# Health check for Hugging Face pings
+@app.get("/")
+def health_check():
+    return {"status": "healthy", "message": "API is running"}
+
 # Create prediction endpoint
 @app.post("/predict")
 async def get_pred_and_exp(data: CustomerData):
